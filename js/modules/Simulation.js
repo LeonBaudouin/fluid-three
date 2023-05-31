@@ -5,7 +5,6 @@ import Controls from "./Controls";
 
 import Advection from "./Advection";
 import ExternalForce from "./ExternalForce";
-import Viscous from "./Viscous";
 import Divergence from "./Divergence";
 import Poisson from "./Poisson";
 import Pressure from "./Pressure";
@@ -18,10 +17,6 @@ export default class Simulation{
         this.fbos = {
             vel_0: null,
             vel_1: null,
-
-            // for calc next velocity with viscous
-            vel_viscous0: null,
-            vel_viscous1: null,
 
             // for calc pressure
             div: null,
@@ -36,14 +31,11 @@ export default class Simulation{
 
         this.options = {
             iterations_poisson: 1,
-            iterations_viscous: 1,
             mouse_force: 20,
             resolution: 0.5,
             cursor_size: 200,
-            viscous: 30,
             isBounce: false,
             dt: 0.014,
-            isViscous: false,
             BFECC: false
         };
 
@@ -92,20 +84,10 @@ export default class Simulation{
             dst: this.fbos.vel_1,
         });
 
-        this.viscous = new Viscous({
-            cellScale: this.cellScale,
-            boundarySpace: this.boundarySpace,
-            viscous: this.options.viscous,
-            src: this.fbos.vel_1,
-            dst: this.fbos.vel_viscous1,
-            dst_: this.fbos.vel_viscous0,
-            dt: this.options.dt,
-        });
-
         this.divergence = new Divergence({
             cellScale: this.cellScale,
             boundarySpace: this.boundarySpace,
-            src: this.fbos.vel_viscous0,
+            src: this.fbos.vel_0,
             dst: this.fbos.div,
             dt: this.options.dt,
         });
@@ -122,7 +104,7 @@ export default class Simulation{
             cellScale: this.cellScale,
             boundarySpace: this.boundarySpace,
             src_p: this.fbos.pressure_0,
-            src_v: this.fbos.vel_viscous0,
+            src_v: this.fbos.vel_0,
             dst: this.fbos.vel_0,
             dt: this.options.dt,
         });
@@ -171,14 +153,6 @@ export default class Simulation{
         });
 
         let vel = this.fbos.vel_1;
-
-        if(this.options.isViscous){
-            vel = this.viscous.update({
-                viscous: this.options.viscous,
-                iterations: this.options.iterations_viscous,
-                dt: this.options.dt
-            });
-        }
 
         this.divergence.update({vel});
 
