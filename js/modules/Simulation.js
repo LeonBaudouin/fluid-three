@@ -9,6 +9,7 @@ import Viscous from "./Viscous";
 import Divergence from "./Divergence";
 import Poisson from "./Poisson";
 import Pressure from "./Pressure";
+import Accumulation from "./Accumulation";
 
 export default class Simulation{
     constructor(props){
@@ -28,19 +29,22 @@ export default class Simulation{
             // for calc poisson equation 
             pressure_0: null,
             pressure_1: null,
+
+            accumulation_0: null,
+            accumulation_1: null
         };
 
         this.options = {
-            iterations_poisson: 32,
-            iterations_viscous: 32,
+            iterations_poisson: 1,
+            iterations_viscous: 1,
             mouse_force: 20,
             resolution: 0.5,
-            cursor_size: 100,
+            cursor_size: 200,
             viscous: 30,
             isBounce: false,
             dt: 0.014,
             isViscous: false,
-            BFECC: true
+            BFECC: false
         };
 
         const controls = new Controls(this.options);
@@ -122,6 +126,12 @@ export default class Simulation{
             dst: this.fbos.vel_0,
             dt: this.options.dt,
         });
+
+        this.accumulation = new Accumulation({
+            src: this.fbos.pressure_1,
+            dst: this.fbos.accumulation_0,
+            dst_: this.fbos.accumulation_1
+        })
     }
 
     calcSize(){
@@ -133,6 +143,7 @@ export default class Simulation{
 
         this.cellScale.set(px_x, px_y);
         this.fboSize.set(width, height);
+        console.log(this.fboSize)
     }
 
     resize(){
@@ -145,7 +156,6 @@ export default class Simulation{
 
 
     update(){
-
         if(this.options.isBounce){
             this.boundarySpace.set(0, 0);
         } else {
@@ -177,5 +187,7 @@ export default class Simulation{
         });
 
         this.pressure.update({ vel , pressure});
+        
+        this.accumulation.update({ pressure: this.fbos.vel_0 })
     }
 }

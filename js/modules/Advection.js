@@ -5,6 +5,7 @@ import advection_frag from "./glsl/sim/advection.frag";
 import ShaderPass from "./ShaderPass";
 
 import * as THREE from "three";
+import Controls from "./Controls";
 
 
 export default class Advection extends ShaderPass{
@@ -26,6 +27,15 @@ export default class Advection extends ShaderPass{
                     velocity: {
                         value: simProps.src.texture
                     },
+                    noise: {
+                        value: new THREE.TextureLoader().load('/noise.png')
+                    },
+                    noisePower: {
+                        value: 10,
+                    },
+                    noiseFactor: {
+                        value: 100
+                    },
                     dt: {
                         value: simProps.dt
                     },
@@ -38,6 +48,10 @@ export default class Advection extends ShaderPass{
         });
 
         this.init();
+
+
+        Controls.instance.gui.add(this.material.uniforms.noisePower, 'value')
+        Controls.instance.gui.add(this.material.uniforms.noiseFactor, 'value')
     }
 
     init(){

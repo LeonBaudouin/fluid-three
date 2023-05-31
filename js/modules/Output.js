@@ -5,6 +5,8 @@ import Simulation from "./Simulation";
 import face_vert from "./glsl/sim/face.vert";
 import color_frag from "./glsl/sim/color.frag";
 
+import { GPUStatsPanel } from 'three/examples/jsm/utils/GPUStatsPanel';
+import Stats from 'stats-js';
 
 export default class Output{
     constructor(){
@@ -18,22 +20,36 @@ export default class Output{
         this.camera = new THREE.Camera();
 
         this.output = new THREE.Mesh(
-            new THREE.PlaneBufferGeometry(2, 2),
+            new THREE.PlaneGeometry(2, 2),
             new THREE.RawShaderMaterial({
                 vertexShader: face_vert,
                 fragmentShader: color_frag,
                 uniforms: {
-                    velocity: {
-                        value: this.simulation.fbos.vel_0.texture
+                    fbo: {
+                        value: this.simulation.fbos.accumulation_0.texture
+                        // value: this.simulation.fbos.vel_0.texture
                     },
                     boundarySpace: {
                         value: new THREE.Vector2()
+                    },
+                    map: {
+                        value: new THREE.TextureLoader().load('uv.png')
                     }
                 },
             })
         );
 
         this.scene.add(this.output);
+
+
+        const stats = new Stats();
+        document.body.appendChild(stats.dom);
+        const panel = new GPUStatsPanel(Common.renderer.getContext());
+        this._statsGpuPanel = panel
+        stats.addPanel(panel);
+
+        this._stats = stats
+
     }
     addScene(mesh){
         this.scene.add(mesh);
@@ -49,7 +65,16 @@ export default class Output{
     }
 
     update(){
+        this._stats?.begin();
+
+        this._statsGpuPanel?.startQuery();
+
         this.simulation.update();
+        this.output.material.uniforms.fbo.value = this.simulation.accumulation.props.output.texture
         this.render();
+
+        this._statsGpuPanel?.endQuery();
+
+        this._stats?.end();
     }
 }

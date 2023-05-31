@@ -4,6 +4,8 @@ export default class Controls{
     constructor(params){
         this.params = params;
         this.init();
+
+        Controls.instance = this
     }
 
     init(){

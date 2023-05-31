@@ -16,7 +16,7 @@ export default class ExternalForce extends ShaderPass{
 
     init(simProps){
         super.init();
-        const mouseG = new THREE.PlaneBufferGeometry(
+        const mouseG = new THREE.PlaneGeometry(
             1, 1
         );
 
