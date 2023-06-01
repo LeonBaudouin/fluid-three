@@ -1,5 +1,4 @@
 import face_vert from "./glsl/sim/face.vert";
-import line_vert from "./glsl/sim/line.vert";
 
 import advection_frag from "./glsl/sim/advection.frag";
 import ShaderPass from "./ShaderPass";
@@ -16,9 +15,6 @@ export default class Advection extends ShaderPass{
                 fragmentShader: advection_frag,
                 uniforms: {
                     boundarySpace: {
-                        value: simProps.cellScale
-                    },
-                    px: {
                         value: simProps.cellScale
                     },
                     fboSize: {
@@ -39,9 +35,6 @@ export default class Advection extends ShaderPass{
                     dt: {
                         value: simProps.dt
                     },
-                    isBFECC: {
-                        value: true
-                    }
                 },
             },
             output: simProps.dst
@@ -79,22 +72,11 @@ export default class Advection extends ShaderPass{
             -1, -1, 0
         ]);
         boundaryG.setAttribute( 'position', new THREE.BufferAttribute( vertices_boundary, 3 ) );
-
-        const boundaryM = new THREE.RawShaderMaterial({
-            vertexShader: line_vert,
-            fragmentShader: advection_frag,
-            uniforms: this.uniforms
-        });
-
-        this.line = new THREE.LineSegments(boundaryG, boundaryM);
-        this.scene.add(this.line);
     }
 
-    update({ dt, isBounce, BFECC }){
+    update({ dt }){
 
         this.uniforms.dt.value = dt;
-        this.line.visible = isBounce;
-        this.uniforms.isBFECC.value = BFECC;
 
         super.update();
     }

@@ -1,5 +1,4 @@
 attribute vec3 position;
-uniform vec2 px;
 uniform vec2 boundarySpace;
 varying vec2 uv;
 

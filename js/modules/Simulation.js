@@ -30,13 +30,10 @@ export default class Simulation{
         };
 
         this.options = {
-            iterations_poisson: 1,
             mouse_force: 20,
             resolution: 0.5,
             cursor_size: 200,
-            isBounce: false,
             dt: 0.014,
-            BFECC: false
         };
 
         const controls = new Controls(this.options);
@@ -125,7 +122,6 @@ export default class Simulation{
 
         this.cellScale.set(px_x, px_y);
         this.fboSize.set(width, height);
-        console.log(this.fboSize)
     }
 
     resize(){
@@ -138,11 +134,7 @@ export default class Simulation{
 
 
     update(){
-        if(this.options.isBounce){
-            this.boundarySpace.set(0, 0);
-        } else {
-            this.boundarySpace.copy(this.cellScale);
-        }
+        this.boundarySpace.copy(this.cellScale);
 
         this.advection.update(this.options);
 
@@ -156,9 +148,7 @@ export default class Simulation{
 
         this.divergence.update({vel});
 
-        const pressure = this.poisson.update({
-            iterations: this.options.iterations_poisson,
-        });
+        const pressure = this.poisson.update();
 
         this.pressure.update({ vel , pressure});
         
